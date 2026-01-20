@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+title: "Crop Failure in SSA: Survey, Spatial Prediction, and Satellite Evidence"
+message: "If you use this repository, please cite it."
+type: software
+authors:
+  - family-names: Chamberlin
+    given-names: Jordan
+  - family-names: Gebrekidan
+    given-names: Bisrat Haile
+  - family-names: López-Ridaura
+    given-names: Santiago
+  - family-names: Hougnidé
+    given-names: Deo-Gratias
+  - family-names: Oyinbo
+    given-names: Oyakhilomen
+repository-code: "https://github.com/bsrthyle/crop-failure-ssa"
+license: "CC-BY-NC-4.0"

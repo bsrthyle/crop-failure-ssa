@@ -1,0 +1,47 @@
+# Data (restricted / large)
+data/raw/
+data/interim/
+outputs/private/
+stata/logs/
+*.env
+**/*_key.json
+**/*credentials*
+
+# R
+.Rhistory
+.RData
+.Rproj.user/
+renv/library/
+renv/python/
+renv/staging/
+
+# Quarto / Rmd
+analysis/**/.quarto/
+analysis/**/_site/
+analysis/**/.Rproj.user/
+analysis/**/*.html
+
+# Logs / caches
+**/*.log
+**/.cache/
+**/cache/
+
+# Large rasters / geospatial (unless explicitly public + small)
+*.tif
+*.tiff
+*.vrt
+*.nc
+*.grd
+*.gri
+*.gpkg
+*.shp
+*.shx
+*.dbf
+*.prj
+*.cpg
+
+# Stata
+*.dta
+*.ster
+*.smcl
+*.gph

@@ -1,0 +1,109 @@
+project:
+  name: "crop-failure-ssa"
+  seed: 12345
+
+paths:
+  data_raw: "data/raw"
+  data_interim: "data/interim"
+  data_processed: "data/processed"
+  outputs_public: "outputs/public"
+  outputs_private: "outputs/private"
+  reports_pdf: "reports/pdf"
+  analysis_report: "analysis/paper_survey_report"
+
+survey:
+  sources:
+    lsms_harmonized:
+      enabled: true
+      version: "v2.0"
+      file_pattern: "LSMS_ISA_harmonized_*.dta"   # adjust to your local files
+    zambia_rals:
+      enabled: true
+      waves: [2012, 2015, 2019]
+      file_pattern: "RALS_ZMB_*.dta"
+
+  countries:
+    - ETH
+    - MWI
+    - MLI
+    - NER
+    - NGA
+    - TZA
+    - UGA
+
+  crop_failure_definition:
+    # primary: harvested/planted ratio (continuous); plus binary "any loss"
+    use_proportional_allocation_for_intercrops: true
+    any_loss_threshold: 0.000001     # any non-zero difference
+    severity_bins: [0.0, 0.25, 0.50, 0.75, 1.0]
+    shock_mapping:
+      drought: ["wilting due to drought", "failed germination due to drought", "drought"]
+      flood_rain: ["water logging", "floods, heavy rain", "flood", "heavy rain"]
+      pests_disease: ["pests and diseases", "witch weed / striga", "pests", "disease"]
+      management: ["field not weeded, weeded late", "lack of fertilizer", "planted late", "insufficient labor"]
+      other: ["soils generally bad", "animal/bird destruction", "do not know", "crop mixture", "fire", "bad seed"]
+
+econometrics:
+  engine: "stata"
+  stata:
+    exec: "stata-mp"                 # change to your installation
+    batch_flag: "-b"
+    master_do: "stata/do/00_master.do"
+  outcomes:
+    fractional: true
+    binary_any_loss: true
+  fe_strategy:
+    use_mundlak_chamberlain: true
+    cluster_level: "household_id"
+
+spatial_prediction_survey:
+  enabled: true
+  grid:
+    resolution_km: 5
+    aoi: "SSA"
+  covariates:
+    climate: ["mean_rain_gs", "rain_cv_dekadal", "tmean_gs", "tmax_gs"]
+    soils: ["ph", "soc", "clay", "cec"]
+    access: ["dist_market", "travel_time_city"]
+  model:
+    type: "ranger"                    # or xgboost / glmnet
+    spatial_cv_blocks_km: 100
+    outputs:
+      prob_failure: true
+      expected_loss_share: true
+
+satellite:
+  enabled: true
+  seasons:
+    - name: "main"
+      baseline_years: [2003, 2023]
+  indicators:
+    - ndvi_anomaly
+    - evi_anomaly
+    - season_integral
+    - sos_delay
+  sources:
+    vegetation: "MODIS"               # or Sentinel-2 (heavier)
+    rainfall: "CHIRPS"
+    temperature: "ERA5L"
+  model:
+    type: "threshold_plus_ml"
+    threshold:
+      ndvi_anom_failure: -1.0         # example z-score threshold
+    ml:
+      enabled: true
+      algorithm: "xgboost"
+  outputs:
+    prob_failure: true
+    failure_class: true
+
+fusion:
+  enabled: true
+  approach: "ensemble"
+  outputs:
+    disagreement_maps: true
+    calibrated_prob: true
+
+render:
+  report_engine: "rmarkdown"             # or quarto
+  report_file: "analysis/paper_survey_report/report.Rmd"
